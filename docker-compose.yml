@@ -1,0 +1,46 @@
+version: "3.9"
+services:
+  nginx:
+    image: nginx:stable-alpine
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    depends_on:
+      - php
+      - db
+    volumes:
+      - ./:/var/www/html:delegated
+      - ./docker/nginx:/etc/nginx/conf.d
+    networks:
+      - main
+  php:
+    build:
+      context: ./docker/dockerfiles
+      dockerfile: php.dockerfile
+    restart: unless-stopped
+    depends_on:
+      - db
+    user: ${UID}
+    networks:
+      - main
+    volumes:
+      - ./:/var/www/html:delegated
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    networks:
+      - main
+    volumes:
+      - database:/var/lib/mysql
+      - ./docker/mysql/init:/docker-entrypoint-initdb.d/
+volumes:
+  database:
+    driver: local
+networks:
+  main:
+    driver: bridge
