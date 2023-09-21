@@ -1,0 +1,6 @@
+.env
+public/assets
+public/manifest.json
+app/cache/*
+vendor
+node_modules
